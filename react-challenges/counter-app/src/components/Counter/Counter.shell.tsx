@@ -7,7 +7,7 @@ interface CounterProps {
     maxValue?: number;
 }
 
-// TODO: Add your styled components here
+
 const CounterContainer = styled.div`
     display: flex;
     flex-direction: column;
@@ -16,35 +16,38 @@ const CounterContainer = styled.div`
     width: 100%;
     max-width: 400px;
     margin: 50px auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    background-color: #F9F9F9;
-        h2 {
-        font-size: 36px;
-        margin-bottom: 20px;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    background-color: #f4f7fc;
+    text-align: center;
+
+    h2 {
+        font-size: 42px;
+        margin-bottom: 30px;
         color: #333;
     }
 
     button {
-        padding: 12px 20px;
-        margin: 8px;
-        font-size: 16px;
+        padding: 14px 24px;
+        margin: 10px;
+        font-size: 18px;
         border: none;
-        border-radius: 5px;
-        background: linear-gradient(145deg, #6e7dff, #4e5fff); /* Nice gradient background */
+        border-radius: 8px;
+        background: linear-gradient(145deg, #6e7dff, #4e5fff);
         color: white;
         cursor: pointer;
         transition: all 0.3s ease;
-
+        min-width: 120px;
+        
         &:hover {
-            background: linear-gradient(145deg, #4e5fff, #6e7dff); /* Reverse gradient on hover */
-            transform: translateY(-2px); /* Slight lift effect */
+            background: linear-gradient(145deg, #4e5fff, #6e7dff);
+            transform: translateY(-3px);
         }
 
         &:active {
-            background: linear-gradient(145deg, #4e5fff, #6e7dff); /* Same gradient on active */
-            transform: translateY(2px); /* Button "pressed" effect */
+            background: linear-gradient(145deg, #4e5fff, #6e7dff);
+            transform: translateY(1px);
         }
 
         &:disabled {
@@ -53,98 +56,139 @@ const CounterContainer = styled.div`
         }
     }
 
-
     /* Step input container */
     .step-input-container {
         margin: 20px 0;
         display: flex;
         align-items: center;
+        justify-content: center;
     }
 
     .step-input-container label {
         font-size: 18px;
         margin-right: 10px;
+        color: #555;
     }
 
     .step-input-container input {
-        width: 60px;
+        width: 70px;
         padding: 8px;
         font-size: 16px;
         border: 1px solid #ccc;
-        border-radius: 5px;
+        border-radius: 6px;
         text-align: center;
+        margin-left: 8px;
+        transition: border-color 0.3s ease;
     }
 
     /* History section styling */
-    .history-section {
-        margin-top: 20px;
+    .history-container {
+        margin-top: 30px;
         width: 100%;
         text-align: left;
     }
 
-    .history-section h3 {
-        font-size: 20px;
-        margin-bottom: 10px;
+    .history-container h3 {
+        font-size: 22px;
+        margin-bottom: 15px;
+        color: #444;
     }
 
     .history-list {
-        list-style-type: none;
         padding: 0;
+        font-size: 16px;
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 10px;
     }
 
     .history-list li {
         font-size: 18px;
-        padding: 4px;
-        border-bottom: 1px solid #ddd;
+        padding: 6px 10px;
+        background-color: #e7eff9;
+        border-radius: 5px;
+        margin-bottom: 8px;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: #d0e1ff;
+        }
     }
 `;
+
 
 export const Counter: React.FC<CounterProps> = ({
     initialCount = 0,
     minValue = 0,
     maxValue = 100
 }) => {
-    // TODO: Implement state management using hooks
+    //creating some state variables
+    const [count, setCount] = useState(initialCount)
+    const [history, setHistory] = useState<number[]>([initialCount]); //upon creation add the initial count to the history
+    const [step, setStep] = useState(1); //setting the step to be initially one
     
     const handleIncrement = () => {
-        // TODO: Implement increment logic
+        if (count + step <= maxValue) {
+            const newCount = count + step;
+            setCount(newCount);
+            setHistory(prevHistory => [...prevHistory, newCount]);
+        }
     };
 
     const handleDecrement = () => {
-        // TODO: Implement decrement logic
+        if (count - step >= minValue) {
+            const newCount = count - step;
+            setCount(newCount);
+            setHistory(prevHistory => [...prevHistory, newCount])
+        }
     };
 
     const handleReset = () => {
-        // TODO: Implement reset logic
+        setCount(initialCount);
+        setHistory([initialCount]);
+    };
+
+    //function to handle the step change
+    const handleStepChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(event.target.value, 10); //parsing the input value as an integer that is a base 10 (decimal) number
+        if (!isNaN(value) && value > 0) { //if the value IS a number and the value is greater than 0
+            setStep(value);
+        }
     };
 
     return (
         <CounterContainer>
             {/*current count*/}
-            <h2>Current Count: </h2>
+            <h2>Current Count: {count}</h2>
 
             {/*buttons for incrementing and decrementing the count*/}
-            <button>Increment</button>         
-            <button>Decrement</button>
+            <button onClick={handleIncrement} disabled={count + step > maxValue}>Increment</button>         
+            <button onClick={handleDecrement} disabled={count - step < minValue}>Decrement</button>
 
             {/*cutsom input for the variable steps*/}
-            <div>
+            <div className="step-input-container">
                 <label htmlFor="step">Set Steps: </label>
                 <input
                     id="step"
                     type="number"
                     min="1"
-                    max="10" 
+                    value={step}
+                    onChange={handleStepChange} 
                 />
             </div>
 
-            {/*display count histoy*/}
-            <div>
+            {/*display count history*/}
+            <div className="history-container">
                 <h3>History</h3>
-                <ul>
-
+                <ul className="history-list">
+                    {history.map((value, index) => (
+                        <li key={index}>{value}</li>
+                    ))}
                 </ul>
             </div>
+            
+            {/*reset button*/}
+            <button onClick={handleReset}>Reset</button>
         </CounterContainer>
     );
 };
