@@ -80,15 +80,22 @@ class DataValidator:
     @staticmethod
     def validate_age(age: int) -> bool:
         """Validate age is positive integer."""
-        # TODO: Implement age validation
-        pass
+        if isinstance(age, int) and age > 0:
+            return True
+        return False
 
     @staticmethod
     def validate_date(date_str: str) -> bool:
         """Validate date string format."""
-        # TODO: Implement date validation
-        pass
-
+        # Ensure the string matches the exact format of YYYY-MM-DD
+        if len(date_str) != 10 or date_str[4] != '-' or date_str[7] != '-':
+            return False
+        #use datetime to check the date
+        try:
+            datetime.strptime(date_str, "%Y-%m-%d")
+            return True
+        except ValueError:
+            return False
 
 class DataTransformer:
     """Transforms input data into standardized format."""
