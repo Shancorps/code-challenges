@@ -64,13 +64,13 @@ class DataValidator:
         valid_local_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._%+-"
         valid_domain_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-"
 
-        for c in local_string:
-            if c not in valid_local_chars:
+        for character in local_string:
+            if character not in valid_local_chars:
                 return False
 
         # Check domain part characters
-        for c in domain_string:
-            if c not in valid_domain_chars:
+        for character in domain_string:
+            if character not in valid_domain_chars:
                 return False
         
         #if the email passes all of these tests then it is a valid email
@@ -111,9 +111,32 @@ class DataTransformer:
         - Convert age to integer
         - Standardize dates to YYYY-MM-DD
         """
-        # TODO: Implement record transformation
-        pass
+        #capitalize names if they are in the record dict
+        if "name" in record:
+            record["name"] = record["name"].title()
 
+        #make sure the emails are all lowercase if they are in the record dict
+        if "email" in record:
+            if DataValidator.validate_email(record["email"]):  # Validate email format
+                record["email"] = record["email"].lower()
+            else:
+                record["email"] = None
+
+        #converting the age to an integer if possible
+        if "age" in record:
+            if DataValidator.validate_age(record["age"]):  # Validate age format
+                record["age"] = int(record["age"])
+            else:
+                record["age"] = None
+
+        # Standardize dates to YYYY-MM-DD format if date exists and is valid
+        if "date" in record:
+            if DataValidator.validate_date(record["date"]):  #validate date format first
+                date_obj = datetime.strptime(record["date"], "%Y-%m-%d")  #parse date
+                record["date"] = date_obj.strftime("%Y-%m-%d")  #reformat to YYYY-MM-DD
+            else:
+                record["date"] = None
+        return record
 
 class DataProcessor:
     """Main class for processing data files."""
