@@ -148,17 +148,23 @@ class DataProcessor:
     def process_file(self) -> None:
         """Process the input file and validate/transform all records."""
         try:
+            #open csv file
             with open(self.input_file, newline='', encoding='utf-8') as csvfile:
-                csvreader = csv.DictReader(csvfile)
+                csvreader = csv.DictReader(csvfile) #use csvreader to read the csv file in as a dict
+                #iterate through each row of the dictionary
                 for row in csvreader:
-                    transformed_record = self._process_record(row)
+                    transformed_record = self._process_record(row) #validate and transform every record
                     if transformed_record:
+                        #if the record is sucessfully transformed, add it to the list of valid records
                         self.records.append(transformed_record)
             if not self.records:
+                #if no records were processed log warning
                 logger.warning("No records were processed.")
         except FileNotFoundError:
+            #if the file was not found then give error
             logger.error(f"File not found: {self.input_file}")
         except Exception as e:
+            #general error catch all for other errors that arent specifically handled above
             logger.error(f"An error occurred while processing the file: {e}")
 
     def _process_record(self, record: Dict) -> Optional[Dict]:
@@ -177,27 +183,37 @@ class DataProcessor:
     def to_json(self, output_file: str) -> None:
         """Output processed data to JSON file."""
         if not self.records:
-            logger.warning("No records to write to JSON.")
+            logger.warning("No records to write to JSON.") #log a warning if no records exist to write
         else:
             try:
+                #open the output file in write mode
                 with open(output_file, 'w', encoding='utf-8') as jsonfile:
+                    #write the records to the json file
                     json.dump(self.records, jsonfile, indent=4)
+                #log for completion of the writing to the json file
                 logger.info(f"Data successfully written to {output_file}")
             except Exception as e:
+                #catch all error for when the write was unsucessful
                 logger.error(f"An error occurred while writing to the file: {e}")
 
     def to_sql(self, output_file: str) -> None:
         """Output processed data as SQL insert statements."""
         if not self.records:
-            logger.warning("No records to write to SQL.")
+            logger.warning("No records to write to SQL.") #log warning if no records exist to write
         else:
             try:
+                #open the output file in write mode
                 with open(output_file, 'w', encoding='utf-8') as sqlfile:
+                    #iterate over the records array
                     for record in self.records:
+                        #creating a string in a sql format
                         sql = f"INSERT INTO table_name ({', '.join(record.keys())}) VALUES ({', '.join([str(v) for v in record.values()])});\n"
+                        #writing the sql formatted string into the sql file
                         sqlfile.write(sql)
+                #log for completion of the write
                 logger.info(f"SQL data successfully written to {output_file}")
             except Exception as e:
+                #general catch all error for when the write was unsucessful
                 logger.error(f"An error occurred while writing to the SQL file: {e}")
 
 
