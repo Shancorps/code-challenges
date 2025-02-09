@@ -214,13 +214,13 @@ if __name__ == "__main__":
     #initialize the processor with the input file
     processor = DataProcessor(input_file)
 
-    #step 2: Process the file
+    #process the file
     processor.process_file()
 
-    #step 3: Output processed data to JSON
+    #output processed data to JSON
     processor.to_json(output_json_file)
 
-    #step 4: Output processed data to SQL
+    #output processed data to SQL
     processor.to_sql(output_sql_file)
 
     #completion message
