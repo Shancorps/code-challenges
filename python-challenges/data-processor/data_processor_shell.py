@@ -7,7 +7,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 class DataValidator:
     """Validates input data according to specified rules."""
 
@@ -143,30 +142,88 @@ class DataProcessor:
 
     def __init__(self, input_file: str):
         """Initialize processor with input file path."""
-        # TODO: Initialize processor
-        pass
+        self.input_file = input_file
+        self.records = []
 
     def process_file(self) -> None:
         """Process the input file and validate/transform all records."""
-        # TODO: Implement file processing
-        pass
+        try:
+            with open(self.input_file, newline='', encoding='utf-8') as csvfile:
+                csvreader = csv.DictReader(csvfile)
+                for row in csvreader:
+                    transformed_record = self._process_record(row)
+                    if transformed_record:
+                        self.records.append(transformed_record)
+            if not self.records:
+                logger.warning("No records were processed.")
+        except FileNotFoundError:
+            logger.error(f"File not found: {self.input_file}")
+        except Exception as e:
+            logger.error(f"An error occurred while processing the file: {e}")
 
     def _process_record(self, record: Dict) -> Optional[Dict]:
         """Process a single record with validation and transformation."""
-        # TODO: Implement record processing
-        pass
+        #apply validation and transformation, even if some fields are invalid
+        if "email" in record and not DataValidator.validate_email(record.get("email", "")):
+            record["email"] = None
+        if "age" in record and not DataValidator.validate_age(record.get("age", 0)):
+            record["age"] = None
+        if "date" in record and not DataValidator.validate_date(record.get("date", "")):
+            record["date"] = None
+
+        #transform the record and return it
+        return DataTransformer.transform_record(record)
 
     def to_json(self, output_file: str) -> None:
         """Output processed data to JSON file."""
-        # TODO: Implement JSON output
-        pass
+        if not self.records:
+            logger.warning("No records to write to JSON.")
+        else:
+            try:
+                with open(output_file, 'w', encoding='utf-8') as jsonfile:
+                    json.dump(self.records, jsonfile, indent=4)
+                logger.info(f"Data successfully written to {output_file}")
+            except Exception as e:
+                logger.error(f"An error occurred while writing to the file: {e}")
 
     def to_sql(self, output_file: str) -> None:
         """Output processed data as SQL insert statements."""
-        # TODO: Implement SQL output
-        pass
+        if not self.records:
+            logger.warning("No records to write to SQL.")
+        else:
+            try:
+                with open(output_file, 'w', encoding='utf-8') as sqlfile:
+                    for record in self.records:
+                        sql = f"INSERT INTO table_name ({', '.join(record.keys())}) VALUES ({', '.join([str(v) for v in record.values()])});\n"
+                        sqlfile.write(sql)
+                logger.info(f"SQL data successfully written to {output_file}")
+            except Exception as e:
+                logger.error(f"An error occurred while writing to the SQL file: {e}")
 
 
 if __name__ == "__main__":
-    # TODO: Add example usage
-    pass
+    #example usage
+
+    #path to the sample CSV file
+    input_file = "data.csv"
+    
+    #path to output JSON and SQL files
+    output_json_file = "output.json"
+    output_sql_file = "output.sql"
+
+    #initialize the processor with the input file
+    processor = DataProcessor(input_file)
+
+    #step 2: Process the file
+    processor.process_file()
+
+    #step 3: Output processed data to JSON
+    processor.to_json(output_json_file)
+
+    #step 4: Output processed data to SQL
+    processor.to_sql(output_sql_file)
+
+    #completion message
+    logger.info("Processing complete. Data has been written to:")
+    logger.info(f"JSON file: {output_json_file}")
+    logger.info(f"SQL file: {output_sql_file}")
