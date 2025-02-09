@@ -18,7 +18,10 @@ class DataValidator:
             return False
         
         #splitting the email into the local (pre @) and domain (post @) parts
-        local_string, domain_string = email.split('@')
+        try:
+            local_string, domain_string = email.split('@')
+        except ValueError:
+            return False
 
         #making sure that the local_string and the domain_string are not empty
         if not local_string or not domain_string:
@@ -41,7 +44,11 @@ class DataValidator:
             return False
         
         #making sure the domain_string does not start or end with a hyphen
-        if domain_string[0] == '.' or domain_string[-1] == '-':
+        if domain_string[0] == '-' or domain_string[-1] == '-':
+            return False
+        
+            #making sure the domain doesn't have a hyphen directly before the dot
+        if '-.' in domain_string:
             return False
         
         #making sure the domain_string contains a period seperating the domain and TLD
