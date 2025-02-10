@@ -13,15 +13,17 @@ class DataValidator:
     @staticmethod
     def validate_email(email: str) -> bool:
         """Validate email format."""
+
+        #making sure email is not null and is an instace of type string
+        if not email or not isinstance(email, str):
+            return False
+
         #checking for the existance of exactly ONE "@" symbol
         if email.count('@') != 1:
             return False
         
         #splitting the email into the local (pre @) and domain (post @) parts
-        try:
-            local_string, domain_string = email.split('@')
-        except ValueError:
-            return False
+        local_string, domain_string = email.split('@')
 
         #making sure that the local_string and the domain_string are not empty
         if not local_string or not domain_string:
@@ -44,11 +46,7 @@ class DataValidator:
             return False
         
         #making sure the domain_string does not start or end with a hyphen
-        if domain_string[0] == '-' or domain_string[-1] == '-':
-            return False
-        
-            #making sure the domain doesn't have a hyphen directly before the dot
-        if '-.' in domain_string:
+        if domain_string[0] == '.' or domain_string[-1] == '-':
             return False
         
         #making sure the domain_string contains a period seperating the domain and TLD
@@ -93,7 +91,7 @@ class DataValidator:
     @staticmethod
     def validate_date(date_str: str) -> bool:
         """Validate date string format."""
-        # Ensure the string matches the exact format of YYYY-MM-DD
+        #making sure the string matches the exact format of YYYY-MM-DD and that it is not over 10 digits
         if len(date_str) != 10 or date_str[4] != '-' or date_str[7] != '-':
             return False
         #use datetime to check the date
@@ -130,12 +128,17 @@ class DataTransformer:
 
         #converting the age to an integer if possible
         if "age" in record:
-            if DataValidator.validate_age(record["age"]):  # Validate age format
-                record["age"] = int(record["age"])
-            else:
+            try:
+                #try converting to integer if it's a string like '25'
+                age_value = int(record["age"])
+                if DataValidator.validate_age(age_value):  #validate age format
+                    record["age"] = age_value
+                else:
+                    record["age"] = None
+            except (ValueError, TypeError):
                 record["age"] = None
 
-        # Standardize dates to YYYY-MM-DD format if date exists and is valid
+        #standardize dates to YYYY-MM-DD format if date exists and is valid
         if "date" in record:
             if DataValidator.validate_date(record["date"]):  #validate date format first
                 date_obj = datetime.strptime(record["date"], "%Y-%m-%d")  #parse date
